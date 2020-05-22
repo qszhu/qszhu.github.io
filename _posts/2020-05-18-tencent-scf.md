@@ -32,6 +32,6 @@ tags: [tencent_cloud, serverless, tencent_scf, wechat_mina, updating]
 * 固定service-id(https://cloud.tencent.com/document/product/628/11827)
 
 ### 4. 小结
-* 爬虫？
+* 爬虫
 
 ### 参考资料
