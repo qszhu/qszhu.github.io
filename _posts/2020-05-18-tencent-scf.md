@@ -70,12 +70,12 @@ $ sls deploy
 p.s. `puppeteer`经常被用来做爬虫，而在腾讯云的文档中写着，云函数的出口IP在默认情况下是随机的[9]。这意味着什么还需要观察。
 
 ### 参考资料
-* [1] https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/express/introduction.html
-* [2] https://developers.weixin.qq.com/miniprogram/dev/api-backend/open-api/express/by-business/logistics.getOrder.html
-* [3] https://github.com/puppeteer/puppeteer
-* [4] https://github.com/puppeteer/puppeteer/blob/master/docs/troubleshooting.md#running-puppeteer-in-docker
-* [5] https://cloud.tencent.com/document/product/583/39780#node.js-.E8.BF.90.E8.A1.8C.E6.97.B6
-* [6] https://cloud.tencent.com/document/product/583/11060#.E7.8E.AF.E5.A2.83.E5.86.85.E7.9A.84.E5.86.85.E7.BD.AE.E5.BA.93
-* [7] https://cloud.tencent.com/document/product/583/9210#.E6.89.A7.E8.A1.8C.E6.96.B9.E6.B3.95
-* [8] https://github.com/puppeteer/puppeteer/blob/master/docs/troubleshooting.md#setting-up-chrome-linux-sandbox
-* [9] https://cloud.tencent.com/document/product/583/9180#scf-.E8.AE.BF.E9.97.AE.E5.A4.96.E7.BD.91.E6.97.B6-ip-.E6.98.AF.E9.9A.8F.E6.9C.BA.E7.9A.84.E8.BF.98.E6.98.AF.E5.9B.BA.E5.AE.9A.E7.9A.84.EF.BC.9F
+* [1] [快递接口（商家必看） \| 微信开放文档](https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/express/introduction.html)
+* [2] [logistics.getOrder \| 微信开放文档](https://developers.weixin.qq.com/miniprogram/dev/api-backend/open-api/express/by-business/logistics.getOrder.html)
+* [3] [GitHub - puppeteer/puppeteer: Headless Chrome Node.js API](https://github.com/puppeteer/puppeteer)
+* [4] [puppeteer/troubleshooting.md at master · puppeteer/puppeteer · GitHub](https://github.com/puppeteer/puppeteer/blob/master/docs/troubleshooting.md#running-puppeteer-in-docker)
+* [5] [云函数 依赖安装 - 开发指南 - 文档中心 - 腾讯云](https://cloud.tencent.com/document/product/583/39780#node.js-.E8.BF.90.E8.A1.8C.E6.97.B6)
+* [6] [云函数 Node.js 说明 - 开发指南 - 文档中心 - 腾讯云](https://cloud.tencent.com/document/product/583/11060#.E7.8E.AF.E5.A2.83.E5.86.85.E7.9A.84.E5.86.85.E7.BD.AE.E5.BA.93)
+* [7] [云函数 基本概念 - 开发指南 - 文档中心 - 腾讯云](https://cloud.tencent.com/document/product/583/9210#.E6.89.A7.E8.A1.8C.E6.96.B9.E6.B3.95)
+* [8] [puppeteer/troubleshooting.md at master · puppeteer/puppeteer · GitHub](https://github.com/puppeteer/puppeteer/blob/master/docs/troubleshooting.md#setting-up-chrome-linux-sandbox)
+* [9] [云函数 通用类 - 常见问题 - 文档中心 - 腾讯云](https://cloud.tencent.com/document/product/583/9180#scf-.E8.AE.BF.E9.97.AE.E5.A4.96.E7.BD.91.E6.97.B6-ip-.E6.98.AF.E9.9A.8F.E6.9C.BA.E7.9A.84.E8.BF.98.E6.98.AF.E5.9B.BA.E5.AE.9A.E7.9A.84.EF.BC.9F)
