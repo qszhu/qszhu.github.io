@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 微信客服插件
-date: 2020-05-24 17:04:00 +0800
+date: 2020-05-24 20:10:00 +0800
 tags: [wechat, webextension]
 ---
 
@@ -115,11 +115,11 @@ https://mpkf.weixin.qq.com/cgi-bin/kftransfer?action=gettransferinfo
 微信的客服工具网页版是`react`开发的，新消息是通过轮询获得的，偶尔会遇到丢消息或发不出消息的情况。有条件的话还是推荐通过接入消息推送的方式自行开发客服客户端并与后台整合。不过微信小程序的消息推送接口也没设计好，除了客服消息推送以外，还会推送物流跟踪信息[8]。而小程序的后台只支持配置一个消息推送接口，微信小程序力推的云开发也仅支持客服消息[2]。所以如果既要支持客服消息又要支持物流跟踪消息的话，就需要自行设计和开发消息分发机制了。
 
 ### 参考资料
-* [1] [客服消息使用指南 | 微信开放文档](https://developers.weixin.qq.com/miniprogram/introduction/custom.html#%E5%BE%AE%E4%BF%A1%E5%85%AC%E4%BC%97%E5%B9%B3%E5%8F%B0%E7%BD%91%E9%A1%B5%E7%89%88%E5%AE%A2%E6%9C%8D%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E)
-* [2] [消息推送 | 微信开放文档](https://developers.weixin.qq.com/miniprogram/dev/framework/server-ability/message-push.html)
-* [3] [Intercept HTTP requests - Mozilla | MDN](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Intercept_HTTP_requests)
-* [4] [Content scripts - Mozilla | MDN](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts#Communicating_with_background_scripts)
-* [5] [Working with the Tabs API - Mozilla | MDN](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Working_with_the_Tabs_API)
-* [6] [Enterprise distribution | Firefox Extension Workshop](https://extensionworkshop.com/documentation/enterprise/enterprise-distribution/#signed-vs-unsigned)
-* [7] [webRequest.filterResponseData() - Mozilla | MDN](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/webRequest/filterResponseData)
-* [8] [logistics.onPathUpdate | 微信开放文档](https://developers.weixin.qq.com/miniprogram/dev/api-backend/open-api/express/by-business/logistics.onPathUpdate.html)
+* [1] [客服消息使用指南 \| 微信开放文档](https://developers.weixin.qq.com/miniprogram/introduction/custom.html#%E5%BE%AE%E4%BF%A1%E5%85%AC%E4%BC%97%E5%B9%B3%E5%8F%B0%E7%BD%91%E9%A1%B5%E7%89%88%E5%AE%A2%E6%9C%8D%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E)
+* [2] [消息推送 \| 微信开放文档](https://developers.weixin.qq.com/miniprogram/dev/framework/server-ability/message-push.html)
+* [3] [Intercept HTTP requests - Mozilla \| MDN](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Intercept_HTTP_requests)
+* [4] [Content scripts - Mozilla \| MDN](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts#Communicating_with_background_scripts)
+* [5] [Working with the Tabs API - Mozilla \| MDN](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Working_with_the_Tabs_API)
+* [6] [Enterprise distribution \| Firefox Extension Workshop](https://extensionworkshop.com/documentation/enterprise/enterprise-distribution/#signed-vs-unsigned)
+* [7] [webRequest.filterResponseData() - Mozilla \| MDN](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/webRequest/filterResponseData)
+* [8] [logistics.onPathUpdate \| 微信开放文档](https://developers.weixin.qq.com/miniprogram/dev/api-backend/open-api/express/by-business/logistics.onPathUpdate.html)
