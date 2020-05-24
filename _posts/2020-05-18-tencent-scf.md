@@ -2,7 +2,7 @@
 layout: post
 title:  腾讯云云函数实践
 date:   2020-05-23 22:51:00 +0800
-tags: [tencent_cloud, serverless, tencent_scf, wechat_mina]
+tags: [tencent_cloud, serverless, faas, tencent_scf, wechat_mina]
 ---
 
 ### 1. 背景
@@ -21,11 +21,22 @@ tags: [tencent_cloud, serverless, tencent_scf, wechat_mina]
 
 开发没有什么难度，基本上只要把`puppeteer`和腾讯云云函数各自最简单的sample连起来就可以。值得注意的是腾讯云云函数对函数入口的形式有规定[7]，可以说是种提供商绑定，如果要解除绑定的话就需要至少多加一层抽象。
 
-调试时依旧遇到了常见的`No usable sandbox!`错误[8]。鉴于是`serverless`环境无法配置服务器，只能以无沙盒方式启动。相信腾讯云应该有足够的安全措施🐶。
-
 ### 4. 部署
 
-使用`serverlesss`命令行生成的默认`serverless.yml`中没有指定网关(api网关触发器的`serviceId`为空)，这就会导致每次部署时均创建一个新的网关，访问链接也会发生变化。所以在第一次部署后可以把创建的网关的`serviceId`填回`serverless.yml`中(或是自己手动在腾讯云的控制台创建)，这样就能复用这个网关，访问地址也不会变，生产环境中也可以直接用作反向代理的上游。
+使用`serverlesss`命令行生成的默认`serverless.yml`中没有指定网关，api网关触发器的`serviceId`为空
+
+```yaml
+    events:
+      - apigw:
+          parameters:
+            stageName: test 
+            serviceId:
+            httpMethod: ANY
+```
+
+这就会导致每次部署时均创建一个新的网关，访问链接也会发生变化。可以在第一次部署后把创建的网关的`serviceId`填回`serverless.yml`中（或是部署之前先自己手动在腾讯云的控制台创建一个API网关），这样就能复用这个网关，访问地址也不会变，生产环境中也可以直接用作反向代理的上游。
+
+在线调试时依旧遇到了常见的`No usable sandbox!`错误[8]。鉴于是`serverless`环境无法配置服务器，只能以无沙盒方式启动。相信腾讯云应该有足够的安全措施🐶
 
 ### 5. 其他问题
 
@@ -65,9 +76,9 @@ $ sls deploy
 * 调用次数不多
 * 无状态
 
-像上面提到的网页转图片的服务就是这样的例子。一个企业内部可能有大量像这样的长尾服务，却依旧需要部署和维护。如果采用`FaaS`的话开发者自己就能很方便地进行部署，能节省大量运维资源。此外云服务商通常都提供了充沛的免费额度，这样部署和使用云函数基本就是在白嫖了。
+像上面提到的网页转图片的服务就是这样的例子。一个企业内部可能有大量像这样的长尾服务，使用量小，使用周期短，却依旧需要和头部的服务一视同仁地进行部署和维护。如果采用`FaaS`的话开发者自己就能很方便地进行部署，从而节省大量运维资源。此外云服务商通常都提供了充沛的免费额度，这样部署和使用云函数基本就是在白嫖了。
 
-p.s. `puppeteer`经常被用来做爬虫，而在腾讯云的文档中写着，云函数的出口IP在默认情况下是随机的[9]。这意味着什么还需要观察。
+p.s. `puppeteer`经常被用来做爬虫，而在腾讯云的文档中写着，云函数的出口IP在默认情况下是随机的[9]。这意味着什么还需要观察🐶
 
 ### 参考资料
 * [1] [快递接口（商家必看） \| 微信开放文档](https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/express/introduction.html)
