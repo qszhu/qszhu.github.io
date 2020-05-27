@@ -94,7 +94,7 @@ https://mpkf.weixin.qq.com/cgi-bin/kftransfer?action=gettransferinfo
 
 好在响应的格式都差不多，所以实现起来只是多加几个需要截获的url而已。
 
-![插件截图](/assets/images/1590310867.jpg)
+![插件截图](/assets/images/2020-05-24/1590310867.jpg)
 
 *插件截图*
 

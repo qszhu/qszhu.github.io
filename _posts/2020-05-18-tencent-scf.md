@@ -9,7 +9,7 @@ tags: [tencent_cloud, serverless, faas, tencent_scf, wechat_mina]
 
 微信小程序现可接入物流[1]，实现下单、打单和物流跟踪等功能。对于打单功能，微信提供了几种不同的接入方式，如windows only的打单软件或需要额外接入的第三方打单软件，否则需要通过`getOrder`接口获取数据自行打印[2]。`getOrder`接口会返回base64编码的运单html页面，直接在浏览器中渲染出来打印会遇到的最主要的问题是浏览器的兼容性，可通过使用可控的浏览器渲染出页面再保存为图片的方式解决。在这方面`puppeteer`[3]可以说是首选。
 
-![快递单](/assets/images/WX20200524-164924@2x.png)
+![快递单](/assets/images/2020-05-23/WX20200524-164924@2x.png)
 
 *需渲染的快递单*
 
