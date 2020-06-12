@@ -5,6 +5,8 @@ date: 2020-06-04 18:02:00 +0800
 tags: [tencent_cloud, serverless]
 ---
 
+提示: 腾讯云将在存量组件全部更新到v2后默认展示v2的文档，YMMV。
+
 ### 1. 背景
 
 [上一篇](/2020/05/23/tencent-scf.html)提到，腾讯云云函数对于函数的入口有要求，这可能会影响项目迁移，造成提供商绑定。对此serverless的解决方案是components[1]，而腾讯云也已经支持了。
@@ -152,7 +154,7 @@ Error: invalid reference ${env:XXX}
 
 等等，所以应该是写成`${env.XXX}`而不是`${env:XXX}`吗？难道是文档错了吗？搜了下发现有人有相同的疑问[14]，官方的回复是`${env.XXX}`是components v1的写法[15]，而`${env:XXX}`是v2的写法。
 
-敢情我文档和代码看到现在，看的都是v1吗🤦‍♂️
+敢情我看了半天代码和文档，看的都是v1吗🤦‍♂️
 
 真相是github上`serverless`文档已经默认是v2版本了，而腾讯云的组件默认还是v1的，虽然也有v2分支……
 
@@ -181,7 +183,7 @@ export = app
 
 #### 3.4 环境变量
 
-采用`${env:XXX}`的写法，可以正常运行。不过需要手动把`.env`里的配置搬到`serverless.yml`中。可能的改进方式是自动在yml中生成，或是能够在yml中直接引用外部的`.env`文件。
+采用`${env:XXX}`的写法，可以正常运行。不过需要手动把`.env`里的配置搬到`serverless.yml`中。可能的改进方式是自动在yml中生成，或是能够像`docker-compose.yml`一样直接引用外部的`.env`文件。
 
 ### 4. 小结
 
