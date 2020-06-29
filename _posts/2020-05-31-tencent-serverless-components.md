@@ -185,6 +185,8 @@ export = app
 
 采用`${env:XXX}`的写法，可以正常运行。不过需要手动把`.env`里的配置搬到`serverless.yml`中。可能的改进方式是自动在yml中生成，或是能够像`docker-compose.yml`一样直接引用外部的`.env`文件。
 
+(update 2010-06-29) 写了个自动把`.env`中的配置搬到`serverless.yml`中的[脚本](https://github.com/qszhu/slsenv)
+
 ### 4. 小结
 
 可以看到如果一开始就从v2开始，就不会有那两次fork了。可能腾讯云的component v2还没准备好，代码就没有合入主线。不过最新的腾讯云的文档示例中已经在用v2了[17]，大概只能怪我看的时机不巧了🐶
