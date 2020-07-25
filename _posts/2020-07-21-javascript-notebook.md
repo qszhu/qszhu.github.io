@@ -43,7 +43,7 @@ The example module supplies one function, factorial().  For example,
 1. 从文档中提取出代码片段
 2. 运行代码片段，把运行结果写回到文档中
 
-第一步很简单。因为文档采用`Mardown`格式，只需把其中标注的代码块提取出来，甚至都不需要专门的`Mardown`解析器。简单起见，这里就提取 \`\`\`javascript 和 \`\`\` 之间的内容。
+第一步很简单。因为文档采用`Markdown`格式，只需把其中标注的代码块提取出来，甚至都不需要专门的`Markdown`解析器。简单起见，这里就提取 \`\`\`javascript 和 \`\`\` 之间的内容。
 
 第二步则是通过`Node.js`的`vm`模块[4]实现。通过`vm.createContext()`方法可以为要执行的代码创建一个沙盒环境，通过`vm.runInContent()`方法在沙盒环境中执行代码。代码中创建的变量会留在沙盒环境中，并且代码最后一句语句的执行结果会作为返回值返回给执行者。
 
@@ -114,7 +114,7 @@ Output:
 
 ### 3. async函数
 
-ES6支持async函数，用这样的方法就行不通。因为async函数的结果可能不会在当前的事件循环中返回。这里就利用沙盒环境hack了一下，让调用方等待async函数resolve：
+ES6支持async函数，用这样的方法就行不通。因为async函数的结果可能不会在当前的事件循环中返回。这里就利用沙盒环境hack了一下，让执行者等待async函数resolve：
 
 ```javascript
 async function runAsyncBlock(code) {
@@ -164,7 +164,7 @@ Output:
 
 ### 4. 模块
 
-因为沙盒环境不带`require`，所以需要从调用方传入：
+因为沙盒环境不带`require`，所以需要从执行者传入：
 
 ```javascript
 sandbox.require = require
