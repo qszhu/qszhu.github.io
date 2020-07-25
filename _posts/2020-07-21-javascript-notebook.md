@@ -216,6 +216,6 @@ Output:
 
 ### 参考资料
 * [1] [25.2. doctest — Test interactive Python examples — Python 2.7.18 documentation](https://docs.python.org/2/library/doctest.html)
-* [2] [Project Jupyter | Home](https://jupyter.org/)
+* [2] [Project Jupyter \| Home](https://jupyter.org/)
 * [3] [CoffeeScript](http://coffeescript.org/#literate)
-* [4] [VM (executing JavaScript) | Node.js v14.6.0 Documentation](https://nodejs.org/api/vm.html)
+* [4] [VM (executing JavaScript) \| Node.js v14.6.0 Documentation](https://nodejs.org/api/vm.html)
