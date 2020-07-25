@@ -215,7 +215,7 @@ Output:
 但这样使用有个前提，就是必须得在目标工程的目录下运行才能找得到第三方依赖。这就使得这个工具没法独立发布了。
 
 ### 参考资料
-* [1] https://docs.python.org/2/library/doctest.html
-* [2] https://jupyter.org/
-* [3] http://coffeescript.org/#literate
-* [4] https://nodejs.org/api/vm.html
+* [1] [25.2. doctest — Test interactive Python examples — Python 2.7.18 documentation](https://docs.python.org/2/library/doctest.html)
+* [2] [Project Jupyter | Home](https://jupyter.org/)
+* [3] [CoffeeScript](http://coffeescript.org/#literate)
+* [4] [VM (executing JavaScript) | Node.js v14.6.0 Documentation](https://nodejs.org/api/vm.html)
