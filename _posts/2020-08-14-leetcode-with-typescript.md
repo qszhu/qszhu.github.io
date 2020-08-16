@@ -1,7 +1,7 @@
 ---
 layout: post
 title: LeetCode TypeScript解题工具
-date: 2020-08-15 14:41:00 +0800
+date: 2020-08-17 01:47:00 +0800
 tags: [typescript, leetcode]
 ---
 
@@ -69,6 +69,18 @@ tags: [typescript, leetcode]
 ### 5. 其他
 
 实际使用的话，设置`LEETCODE_SESSION`这一步比较麻烦，需要用户具备一些技术能力。而且cookie过期后还要重新设置。更直观的做法应该是支持自动登录的，不过看了下似乎有点复杂。`leetcode-cn.com`的登录整合了阿里云的无痕验证[8]，登录时会发送一串浏览器本地生成的数据，没有的话就直接拒绝请求了，等有时间再搞了。看了下相关功能介绍，也无怪乎一个刷题的网站会发送阿里系的cookie了。将来是不是会这边刚刷完题，那边淘宝就推送键盘鼠标显示器的链接呢？🤪
+
+Update：花时间看了下自动登录，通过`puppeteer`可以搞。需要注意的地方是阿里云的无痕验证应该会检查浏览器是否工作在`webdriver`模式下，所以需要把`webdriver`属性覆盖掉：
+
+```javascript
+await page.evaluate(() => {
+  Object.defineProperty(navigator, 'webdriver', {
+    get: () => false,
+  })
+})
+```
+
+此外点击和输入需要加入一些延时来模拟人工操作，否则也有可能被拒绝登录。代码已更新。
 
 ### 参考资料
 * [1] [GitHub - qszhu/ts-leetcode at v1](https://github.com/qszhu/ts-leetcode/tree/v1)
