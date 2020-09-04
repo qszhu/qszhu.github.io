@@ -9,7 +9,7 @@ tags: [android, open source, lineageos, essential phone]
 
 前一阵因为tiktok的事情又涌现出一拨节奏大师，于是就有了这么一出：
 
-![立个flag：如果iPhone被封杀我就去做开源Android手机🤪](/assets/images/2020-09-04/1.jpeg)
+![立个flag：如果iPhone被封杀我就去做开源Android手机🤪](/assets/images/2020-09-04/1.jpg)
 
 虽说我不觉得iPhone会被封杀，但一些朋友提醒我不要把话说得太死。于是就当是为了应对最坏的情况作的准备吧🤪
 
