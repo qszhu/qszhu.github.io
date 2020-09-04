@@ -28,6 +28,8 @@ tags: [search engine, updating]
       * 去重
       * 删除标记
     * 关键词
+  * 同义词
+  * 个性化排序
 * 改进
   * 数据持久化
     * 海量数据
@@ -42,7 +44,6 @@ tags: [search engine, updating]
     * 权重排序
     * 结果缓存
     * 热度排序
-      * 结果反馈
     * 纠错
     * 相关推荐
   * 更好的分词
