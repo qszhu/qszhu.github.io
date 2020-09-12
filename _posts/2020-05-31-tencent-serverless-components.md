@@ -185,7 +185,7 @@ export = app
 
 采用`${env:XXX}`的写法，可以正常运行。不过需要手动把`.env`里的配置搬到`serverless.yml`中。可能的改进方式是自动在yml中生成，或是能够像`docker-compose.yml`一样直接引用外部的`.env`文件。
 
-(update 2010-06-29) 写了个自动把`.env`中的配置搬到`serverless.yml`中的[脚本](https://github.com/qszhu/slsenv)
+(update 2020-06-29) 写了个自动把`.env`中的配置搬到`serverless.yml`中的[脚本](https://github.com/qszhu/slsenv)
 
 ### 4. 小结
 
