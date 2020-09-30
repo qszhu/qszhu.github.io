@@ -67,10 +67,10 @@ upstream.pipe(decipher).pipe(downstream)
 * Node.js的流是一种很方便的抽象。印象中似乎没有其他语言的运行时有提供带back pressure的流，应该可以说是Node的特色功能吧。网上相关的资料似乎也比较少，官方文档也比较简略。可能是因为用起来太简单了，大家都觉得没什么好说的吧🤪
 
 ### 参考资料
-* [1] https://en.wikipedia.org/wiki/Jeff_Atwood
-* [2] https://www.openssh.com/txt/socks4.protocol
-* [3] https://www.openssh.com/txt/socks4a.protocol
-* [4] https://www.ietf.org/rfc/rfc1928.txt
-* [5] https://nodejs.org/en/docs/guides/backpressuring-in-streams/
-* [6] https://github.com/mafintosh/pump
-* [7] https://nodejs.org/api/stream.html#stream_api_for_stream_implementers
+* [1] [Jeff Atwood - Wikipedia](https://en.wikipedia.org/wiki/Jeff_Atwood)
+* [2] [SOCKS: A protocol for TCP proxy across firewalls](https://www.openssh.com/txt/socks4.protocol)
+* [3] [SOCKS 4A: A  Simple Extension to SOCKS 4 Protocol](https://www.openssh.com/txt/socks4a.protocol)
+* [4] [SOCKS Protocol Version 5](https://www.ietf.org/rfc/rfc1928.txt)
+* [5] [Backpressuring in Streams \| Node.js](https://nodejs.org/en/docs/guides/backpressuring-in-streams/)
+* [6] [GitHub - mafintosh/pump: pipe streams together and close all of them if one of them closes](https://github.com/mafintosh/pump)
+* [7] [Stream \| Node.js v14.13.0 Documentation](https://nodejs.org/api/stream.html#stream_api_for_stream_implementers)
