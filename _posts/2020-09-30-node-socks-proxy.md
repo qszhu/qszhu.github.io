@@ -66,6 +66,8 @@ upstream.pipe(decipher).pipe(downstream)
   * 由于npm不支持SOCKS代理，需要有一个能使用SOCKS代理的HTTP代理。可以选择现成的npm包，或是自行实现
   * 具备高速线路的远程服务器
 
+![测速](/assets/images/2020-09-30/speed.jpg)
+
 ### 参考资料
 * [1] [Jeff Atwood - Wikipedia](https://en.wikipedia.org/wiki/Jeff_Atwood)
 * [2] [SOCKS: A protocol for TCP proxy across firewalls](https://www.openssh.com/txt/socks4.protocol)
