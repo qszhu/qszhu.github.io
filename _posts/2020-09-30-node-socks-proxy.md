@@ -2,7 +2,7 @@
 layout: post
 title: 用Node.js实现SOCKS代理 
 date: 2020-09-30 20:00:00 +0800
-tags: [node.js, socks]
+tags: [node.js, socks, atwood_s_law]
 ---
 
 ### 1. 背景
