@@ -7,7 +7,7 @@ tags: [compiler, parser_combinators, functional_programming]
 
 ### 背景
 
-极客时间最近上了一门编译原理实战课《手把手带你写一门编程语言》[1]。课程目录让人看了相当兴奋。但如果你是个前端开发，会写点`JavaScript`/`TypeScript`，却没学过编译原理。看到前面几课里一串串的NFA/DFA、递归下降、LL算法等，是不是觉得被教做人？没关系，这里告诉你一种逃课的方法，不用了解编译原理就能轻松搞定词法分析和语法分析。
+极客时间最近上了一门编译原理实战课《手把手带你写一门编程语言》[1]。课程目录让人看了相当兴奋。但如果你是个前端开发，会写点`JavaScript`/`TypeScript`，却没学过编译原理。看到前面几课里一串串的NFA/DFA、递归下降、LL算法等，是不是分分钟觉得被教做人？没关系，这里告诉你一种逃课的方法，不用了解编译原理就能轻松搞定词法分析和语法分析。
 
 ### 定义
 
@@ -69,6 +69,7 @@ export const str = (s: string) =>
       throw `str: Tried to match "${s}", but got unexpected EOF.`
     }
 
+    // check match
     if (slicedTarget.startsWith(s)) {
       return { ...state, index: index + s.length, result: s }
     }
@@ -76,8 +77,10 @@ export const str = (s: string) =>
     throw `str: Tried to match "${s}", but got "${peek(state)}" at index ${index}`
   })
 
+// helper function
 function peek(state: ParserState) {
-  return state.target.slice(state.index, state.index + 10)
+  const { target, index } = state
+  return target.slice(index, index + 10)
 }
 ```
 
@@ -94,7 +97,6 @@ const parser = str('hello')
 {
   const res = await parser.parse('world')
   // str: Tried to match "hello", but got "world" at index 0
-}
 }
 ```
 
@@ -131,8 +133,8 @@ const prog = zeroOrMore(oneOf(functionDecl, functionCall))
 ```typescript
 export const zeroOrMore = (parser: Parser) =>
   new Parser(async (state: ParserState) => {
-    let nextState = state
     const results = []
+    let nextState = state
 
     try {
       while (true) {
@@ -422,7 +424,9 @@ const functionDecl = seqOf(str('function'), Identifier, str('('), str(')'), func
 const prog = zeroOrMore(oneOf(functionDecl, functionCall))
 ```
 
-而且我们好像连词法分析器都没写。如果把上面那些parser构造函数放到一个库文件里，那么每次要实现一个新语言的词法规则和语法规则时，只需要写跟这些规则的数量相当的代码就可以完成语法分析了。要知道代码越少越简单意味着维护成本越低，这些一开始看上去平平无奇的代码真的有那么大的威力吗？让我们立马测试下最简单的函数调用：
+而且我们好像连词法分析器都没写。如果把上面那些parser构造函数放到一个库文件里，那么每次要实现一个新语言的词法规则和语法规则时，只需要写跟这些规则的数量相当的代码就可以完成语法分析了。要知道代码越少越简单意味着维护成本越低，这些每一个都看上去平平无奇的代码真有那么大的威力吗？让我们立马测试下。
+
+先试试一个最简单的函数调用：
 
 ```typescript
 const res = await prog.parse('foo()')
@@ -566,7 +570,7 @@ const res = await parser.parseToEnd(', "world"')
 // regExp: Tried to match "/^"[^"]*"/", but got " "world"" at index 1
 ```
 
-这下明白了，“`,`”和字符串之间有个空格没办法匹配。因为通常编程语言会允许在代码中加入任意的空白符来增加（或是破坏[6]）可读性，所以这些空白符也是要能被匹配出来的。先定义一个能匹配空白符的parser：
+这下明白了，“`,`”和字符串之间有个空格没办法匹配。因为通常编程语言会允许在代码中加入任意的空白符来增加（或是破坏[6]）可读性，所以这些空白符也是要能被匹配出来的。先定义一个能匹配空白符的parser构造函数：
 
 ```typescript
 const whitespace = regExp(/^\s*/)
@@ -725,6 +729,8 @@ const parameterList = lazy(() =>
 
 ### 参考资料
 
+文中parser combinators的实现参考了`arcsecond`[9]的部分API和实现。
+
 * [1] [手把手带你写一门编程语言_编程语言_手把手_编译原理_编译技术_运行时_汇编语言_宫文学_后端_虚拟机_字节码_TS_TypeScript_鸿蒙-极客时间](https://time.geekbang.org/column/intro/436)
 * [2] [01｜实现一门超简单的语言最快需要多久？-极客时间](https://time.geekbang.org/column/article/406179)
 * [3] [01/play.ts · RichardGong/Craft A Language - Gitee.com](https://gitee.com/richard-gong/craft-a-language/blob/master/01/play.ts)
@@ -733,3 +739,4 @@ const parameterList = lazy(() =>
 * [6] [winner/prog.c at main · ioccc-src/winner](https://github.com/ioccc-src/winner/blob/main/2020/tsoj/prog.c)
 * [7] [04/parser.ts · RichardGong/Craft A Language - Gitee.com](https://gitee.com/richard-gong/craft-a-language/blob/master/04/parser.ts)
 * [8] [06/parser.ts · RichardGong/Craft A Language - Gitee.com](https://gitee.com/richard-gong/craft-a-language/blob/master/06/parser.ts)
+* [9] [GitHub - francisrstokes/arcsecond: ✨Zero Dependency Parser Combinator Library for JS Based on Haskell’s Parsec](https://github.com/francisrstokes/arcsecond)
