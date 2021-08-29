@@ -1,13 +1,21 @@
 ---
 layout: post
-title: 手把手带你逃课《手把手带你写一门编程语言》(1)
+title: 用TypeScript实现一门语言(1)——语法分析
 date: 2021-08-22 22:00:00 +0800
 tags: [compiler, parser_combinators, functional_programming]
 ---
 
+### 目录
+* 用TypeScript实现一门语言(1)——语法分析 <-- 你在这里
+* [用TypeScript实现一门语言(2)——表达式解析](/2021/08/27/parsing-expressions.html)
+
 ### 背景
 
-极客时间最近上了一门编译原理实战课《手把手带你写一门编程语言》[1]。课程目录让人看了相当兴奋。但如果你是个前端开发，会写点`JavaScript`/`TypeScript`，却没学过编译原理。看到前面几课里一串串的NFA/DFA、递归下降、LL算法等，是不是分分钟觉得被教做人？没关系，这里告诉你一种逃课的方法，不用了解编译原理就能轻松搞定词法分析和语法分析。
+极客时间最近上了一门编译原理实战课《手把手带你写一门编程语言》[1]。课程目录让人看了相当兴奋，比Bob写了多年的新书[10]还多了很多高级主题。尤其是看到课程使用的语言是TypeScript时，我心想这次可能会有点不一样的东西。要知道Bob虽然把编译器相关的教程写得很浅显易懂，但总是喜欢用Java来实现，号称“如果都能用Java实现了，用其他任何语言也就都能实现了”[11]。但Java的语法并不是很简洁，平添了许多噪音，还缺少了很多语言特性。所以在看到前几课那些写得像Java一样的TS代码之后，我有些失望。
+
+此外，课程涉及到的编译原理知识还是我上大学时的那些东西，虽然经典，但着实枯燥。更有甚者，每次扩展一下语法都几乎要从零开始手写一个生成器，连代码生成器都不用，工作量很大。
+
+在这几年的工作中，我逐渐了解到一种方法，在语言诞生初期不断迭代语法规则的时候，不借助代码生成器就能快速手写语法分析器(`Parser`)，且基本不需要了解编译原理相关的知识。于是我准备来尝试下，用这种方法来实现一门编程语言。
 
 ### 定义
 
@@ -19,9 +27,9 @@ tags: [compiler, parser_combinators, functional_programming]
 type ParserFn = (state: ParserState) => Promise<ParserState>
 ```
 
-其会对当前的分析状态`ParserState`做一些操作，然后返回一个新的状态（这里用到了`Promise`只是为了方便处理分析过程中出错的情况）。
+其会对当前的解析状态`ParserState`做一些操作，然后返回一个新的状态（这里用到了`Promise`只是为了方便处理解析过程中出错的情况）。
 
-分析状态是这样定义的：
+解析状态是这样定义的：
 
 ```typescript
 type ParserState = {
@@ -49,7 +57,7 @@ class Parser {
 }
 ```
 
-这样的话，假如我们已经有了一个`Parser`的实例`parser`，就可以直接传入字符串来分析了：
+这样的话，假如我们已经有了一个`Parser`的实例`parser`，就可以直接传入字符串来解析了：
 
 ```typescript
 const res = await parser.parse('hello')
@@ -147,7 +155,7 @@ export const zeroOrMore = (parser: Parser) =>
   })
 ```
 
-可以看到其尝试不停地用传入的`parser`去匹配分析状态，直到不能匹配为止，并把期间的匹配结果都收集起来，作为新状态的结果返回。让我们来试一下：
+可以看到其尝试不停地用传入的`parser`去匹配解析状态，直到不能匹配为止，并把期间的匹配结果都收集起来，作为新状态的结果返回。让我们来试一下：
 
 ```typescript
 const parser = zeroOrMore(str('hello'))
@@ -515,7 +523,7 @@ const res = await prog.parse('println("hello", "world")')
 */
 ```
 
-Emmm...虽然没有抛出错误，但我们并没有得到想要的结果。注意到分析状态中`index`为0，说明分析器没有匹配到任何结果。我们把在分析过程结束后仍有未匹配到输入的情况定义为出错的情况。为了处理这种情况，在`Parser`类中添加如下方法：
+Emmm...虽然没有抛出错误，但我们并没有得到想要的结果。注意到解析状态中`index`为0，说明解析器没有匹配到任何结果。我们把在解析过程结束后仍有未匹配到输入的情况定义为出错的情况。为了处理这种情况，在`Parser`类中添加如下方法：
 
 ```typescript
 class Parser {
@@ -740,3 +748,5 @@ const parameterList = lazy(() =>
 * [7] [04/parser.ts · RichardGong/Craft A Language - Gitee.com](https://gitee.com/richard-gong/craft-a-language/blob/master/04/parser.ts)
 * [8] [06/parser.ts · RichardGong/Craft A Language - Gitee.com](https://gitee.com/richard-gong/craft-a-language/blob/master/06/parser.ts)
 * [9] [GitHub - francisrstokes/arcsecond: ✨Zero Dependency Parser Combinator Library for JS Based on Haskell’s Parsec](https://github.com/francisrstokes/arcsecond)
+* [10] [Table of Contents · Crafting Interpreters](https://craftinginterpreters.com/contents.html)
+* [11] [Pratt Parsers: Expression Parsing Made Easy              – journal.stuffwithstuff.com](https://journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/)
