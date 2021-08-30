@@ -138,7 +138,7 @@ const res = await prog.parseToEnd(source)
 // Parsing end at 0: "let a: number = 1 + 2 + 3;"
 ```
 
-结果出错了。用我们上次讲过的调试方法，发现在应该用`variableStatement`匹配的地方用了`variableDecl`去匹配。如果你的`tsconfig.json`设置了`noUnusedLocals: true`，就会发现编辑器提示`variableStatement`未使用。我们来修改一下：
+结果出错了。用我们上次讲过的调试方法，发现在应该用`variableStatement`匹配的地方用了`variableDecl`去匹配。如果你的`tsconfig.json`设置了`noUnusedLocals: true`，就会发现编译器提示`variableStatement`未使用。我们来修改一下：
 
 ```typescript
 // statementList = (variableStatement | functionDecl | expressionStatement)+ ;
@@ -185,7 +185,15 @@ unary: primary | prefixOp unary | primary postfixOp ;
 
 ### 运算符优先级
 
-确保运算符优先级的传统方法之一是修改语法[3]，比如要写出支持`+`和`*`的表达式，可以这样做：
+确保运算符优先级的传统方法之一是修改语法[3]，比如要写出支持`+`和`*`的表达式，语法可以这样写：
+
+```
+sum : product ('+' product)*
+product : primary ('*' primary)*
+primary : Num
+```
+
+对应的实现：
 
 ```typescript
 // sum : product ('+' product)*
@@ -233,7 +241,16 @@ const Num =
 
 ### 右结合
 
-注意到上面例子里的运算符都是左结合的，如果是右结合的运算符要怎么写呢？比如求幂运算`**`。因为其优先级比`*`要高，所以要写在`*`下面：
+注意到上面例子里的运算符都是左结合的，如果是右结合的运算符要怎么写呢？比如求幂运算`**`。因为其优先级比`*`要高，所以要插在`*`下面：
+
+```
+sum : ...
+product : power ('*' power)*
+power : primary '**' power | primary
+primary : ...
+```
+
+对应的实现：
 
 ```typescript
 // product : power ('*' power)*
@@ -258,7 +275,7 @@ const { result } = await sum.parseToEnd('1 + 2 * 3 ** 4 + 5')
 
 ### 实现简化
 
-虽然按照上面的方式已经可以处理中缀表达式了，但缺点是每遇到一个运算符就要写一个语法规则出来。看一下课上的语法中定义的运算符，瞬间头大：
+虽然按照上面的方式已经可以处理中缀表达式了，但缺点是每遇到一个运算符就要写一个语法规则出来。看一下课上的语法中定义的二元运算符，瞬间头大：
 
 ```
 binOp: '+' | '-' | '*' | '/' | '==' | '!=' | '<=' | '>=' | '<' | '>' | '&&' | '||' | ... ;
@@ -318,32 +335,36 @@ sum = ['*', '+'].reduce((term, op) => f(term, op), Num)
 ```typescript
 const infix = (nextTerm: Parser, operator: Parser) =>
   seqOf(nextTerm, zeroOrMore(seqOf(operator, nextTerm)))
-    .map(([lhs, rest]) =>
-      [lhs, ...rest].reduce((lhs, [op, rhs]) => [lhs, op, rhs]))
 ```
 
-对比上面的语法规则实现：
+跟上面的规则实现对比下：
 
 ```typescript
-const sum = lazy(() =>
- seqOf(product, zeroOrMore(seqOf(token('+'), product))))
-   .map(([lhs, rest]) =>
-     [lhs, ...rest].reduce((lhs, [op, rhs]) => [lhs, op, rhs]))
+const sum = ...
+  seqOf(product, zeroOrMore(seqOf(token('+'), product))))
+
+const infix = (nextTerm: Parser, operator: Parser) =>
+  seqOf(nextTerm, zeroOrMore(seqOf(operator, nextTerm)))
 ```
 
 可以看到我们只是把下一层的规则和运算符作为函数的参数传入，替换掉具体的规则和运算符而已。让我们尝试把上面的`sum`/`product`等几个规则用这个函数改写下：
 
 ```typescript
+const product = infix(primary, token('*'))
+const sum = infix(product, token('+'))
+```
+
+你可以自行验证下这跟之前的实现是等价的。让我们接着试试`reduce`：
+
+```typescript
 const expr = [infix(?, oneOf(token('*'), ...))].reduce(...)
 ```
 
-一开始我们就遇到了问题。函数的第一个参数需要接受下一层的规则，但下一层的规则是要`reduce`出来的。怎么办呢？了解一点函数式编程的话这都不是个事儿，curry化一下就好了：
+这里我们就遇到了问题。函数的第一个参数需要接受下一层的规则，但下一层的规则是要`reduce`出来的。怎么办呢？了解一点函数式编程的话这都不是个事儿，curry化一下就好了：
 
 ```typescript
 const infix = (operator: Parser) => (nextTerm: Parser) =>
   seqOf(nextTerm, zeroOrMore(seqOf(operator, nextTerm)))
-    .map(([lhs, rest]) =>
-      [lhs, ...rest].reduce((lhs, [op, rhs]) => [lhs, op, rhs]))
 ```
 
 这样就可以实现了：
@@ -376,7 +397,18 @@ const infixRight = (operator: Parser) => (nextTerm: Parser) => {
     oneOf(seqOf(nextTerm, operator, parser), nextTerm))
   return parser
 }
+```
 
+对比一下前面的实现：
+
+```typescript
+const power = ...
+  oneOf(seqOf(primary, token('**'), power), primary))
+```
+
+可以看到也只是抽出了两个参数而已。让我们一起测试下：
+
+```typescript
 const exprOps = [
   infixRight(oneOf(token('**'))),
   infix(oneOf(token('*'), token('/'), token('%'))),
@@ -395,7 +427,7 @@ const expr = exprOps.reduce((term, op) => op(term), primary)
 }
 ```
 
-这样，增加新的运算符和调整运算符优先级，都只要修改`exprOps`数组就可以了。
+这样，增加新的运算符和调整运算符优先级，都只要修改其中的`exprOps`数组就可以了。
 
 ### 前缀和后缀表达式
 
@@ -406,13 +438,9 @@ const expr = exprOps.reduce((term, op) => op(term), primary)
 ```typescript
 const postfix = (operator: Parser) => (nextTerm: Parser) =>
   seqOf(nextTerm, zeroOrMore(operator))
-    .map(([term, ops]) =>
-      [...ops].reduce((acc, op) => [acc, op], term))
 
 const infix = (operator: Parser) => (nextTerm: Parser) =>
   seqOf(nextTerm, zeroOrMore(seqOf(operator, nextTerm)))
-    .map(([lhs, rest]) =>
-      [lhs, ...rest].reduce((lhs, [op, rhs]) => [lhs, op, rhs]))
 ```
 
 前缀和右结合：
@@ -516,7 +544,7 @@ const primary: Parser = lazy(() =>
 }
 ```
 
-可以看到直接解析的话是会报错的。但是明明有`1+ +++2`和`1+++ +2`是合法的呀，就不能直接解析出来吗？如果相同的表达式能解析出不同的结果，则说明语法是有二义性的。你可以把`parser combinators`理解为动态生成的递归下降算法的实现，不加特别处理的话是没有回溯的过程的，就只能解析出一个确定的结果（或是解析出错）。对于程序设计语言来说我觉得这不是一件坏事。
+可以看到直接解析的话是会报错的。难道就不能解析成`1+ +++2`或`1+++ +2`的结果吗？如果相同的表达式能解析出不同的结果，则说明语法是有二义性的。你可以把`parser combinators`理解为动态生成的递归下降算法的实现，不加特别处理的话是没有回溯的过程的，就只能解析出一个确定的结果（或是解析出错）。对于程序设计语言来说我觉得这不是一件坏事。
 
 举个栗子，鄙司内部有个简单的DSL，投入使用后稳定运行了一段时间。某天某位同学突然发现自己刚写的一段DSL能把编译器卡死。调查之后我发现由于编译DSL的编译器用了个支持Earley算法[6]的库，能够解析二义性语法，所以语法规则就定义得比较放飞自我。一段特定的程序就导致编译器在不停尝试各种可能，只为得出一个解析结果。最后通过消除了语法中的二义性才解决了问题。所以我觉得并不是解析器能力越强就越好。
 
