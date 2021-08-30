@@ -256,10 +256,12 @@ primary : ...
 // product : power ('*' power)*
 const product = lazy(() =>
   seqOf(power, zeroOrMore(seqOf(token('*'), power))))
+    .map(...)
 
 // power : primary '**' power | primary
 const power = lazy(() =>
   oneOf(seqOf(primary, token('**'), power), primary))
+    .map(...)
 ```
 
 试一下：
@@ -335,6 +337,7 @@ sum = ['*', '+'].reduce((term, op) => f(term, op), Num)
 ```typescript
 const infix = (nextTerm: Parser, operator: Parser) =>
   seqOf(nextTerm, zeroOrMore(seqOf(operator, nextTerm)))
+    .map(...)
 ```
 
 跟上面的规则实现对比下：
@@ -342,9 +345,11 @@ const infix = (nextTerm: Parser, operator: Parser) =>
 ```typescript
 const sum = ...
   seqOf(product, zeroOrMore(seqOf(token('+'), product))))
+    .map(...)
 
 const infix = (nextTerm: Parser, operator: Parser) =>
   seqOf(nextTerm, zeroOrMore(seqOf(operator, nextTerm)))
+    .map(...)
 ```
 
 可以看到我们只是把下一层的规则和运算符作为函数的参数传入，替换掉具体的规则和运算符而已。让我们尝试把上面的`sum`/`product`等几个规则用这个函数改写下：
@@ -357,7 +362,7 @@ const sum = infix(product, token('+'))
 你可以自行验证下这跟之前的实现是等价的。让我们接着试试`reduce`：
 
 ```typescript
-const expr = [infix(?, oneOf(token('*'), ...))].reduce(...)
+const expr = [infix(???, oneOf(token('*'), ...))].reduce(...)
 ```
 
 这里我们就遇到了问题。函数的第一个参数需要接受下一层的规则，但下一层的规则是要`reduce`出来的。怎么办呢？了解一点函数式编程的话这都不是个事儿，curry化一下就好了：
@@ -438,9 +443,11 @@ const expr = exprOps.reduce((term, op) => op(term), primary)
 ```typescript
 const postfix = (operator: Parser) => (nextTerm: Parser) =>
   seqOf(nextTerm, zeroOrMore(operator))
+    .map(...)
 
 const infix = (operator: Parser) => (nextTerm: Parser) =>
   seqOf(nextTerm, zeroOrMore(seqOf(operator, nextTerm)))
+    .map(...)
 ```
 
 前缀和右结合：
