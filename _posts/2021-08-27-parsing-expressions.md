@@ -123,7 +123,7 @@ const argumentList = lazy(() =>
 ```typescript
 // parameterList : parameter (',' parameter)* ;
 const parameterList = lazy(() =>
-  seqOf(parameter, zeroOrOne(seqOf(token(','), parameter))))
+  seqOf(parameter, zeroOrMore(seqOf(token(','), parameter))))
 
 // parameter : Identifier typeAnnotation? ; 
 const parameter = lazy(() =>
