@@ -8,6 +8,7 @@ tags: [compiler, parser_combinators, functional_programming, expression]
 ### 目录
 * [用TypeScript实现一门语言(1)——语法分析](/2021/08/22/parser-combinators.html)
 * 用TypeScript实现一门语言(2)——表达式解析 <-- 你在这里
+* [用TypeScript实现一门语言(3)——语法分析拾遗](/2021/09/07/parsing-misc.html)
 
 ### 背景
 
@@ -118,7 +119,9 @@ const argumentList = lazy(() =>
   seqOf(expression, zeroOrMore(seqOf(token(','), expression))))
 ```
 
-注意上面的代码中省略了终结符和对匹配结果的`map`。不过这时编译器还有报错，说`callSignature`中的`parameterList`未定义。看起来是漏掉了，我们拿前几课里的补上：
+为了简略上面的代码中省略了终结符的词法规则和对匹配结果的`map`，可以看到即便省略了很多还是要手写挺多东西的，只不过比手写递归下降算法要好很多了。
+
+不过这时编译器还有报错，说`callSignature`中的`parameterList`未定义。看起来是漏掉了，我们拿前几课里的补上：
 
 ```typescript
 // parameterList : parameter (',' parameter)* ;
@@ -140,10 +143,12 @@ const res = await prog.parseToEnd(source)
 
 结果出错了。用我们上次讲过的调试方法，发现在应该用`variableStatement`匹配的地方用了`variableDecl`去匹配。如果你的`tsconfig.json`设置了`noUnusedLocals: true`，就会发现编译器提示`variableStatement`未使用。我们来修改一下：
 
-```typescript
-// statementList = (variableStatement | functionDecl | expressionStatement)+ ;
+```diff
+- // statementList = (variableDecl | functionDecl | expressionStatement)+ ;
++ // statementList = (variableStatement | functionDecl | expressionStatement)+ ;
 const statementList = lazy(() =>
-  oneOrMore(oneOf(variableStatement, functionDecl, expressionStatement)))
+-   oneOrMore(oneOf(variableDecl, functionDecl, expressionStatement)))
++   oneOrMore(oneOf(variableStatement, functionDecl, expressionStatement)))
 ```
 
 再次运行：
@@ -174,33 +179,35 @@ const res = await prog.parseToEnd(source)
 */
 ```
 
-可以看到在解析出来的表达式里，运算符没有优先级的概念。课上[2]这样做没有问题，因为已经先从语法上区分了前缀和后缀表达式：
+这里我们希望`*`的优先级比`+`高，但在表达式的解析结果里没有体现这一点。课上[2]这样做没有问题，因为已经先从语法上区分了前缀和后缀表达式：
 
 ```
 binary: unary (binOp unary)* ;
 unary: primary | prefixOp unary | primary postfixOp ;
 ```
 
-剩下的中缀表达式再用运算符优先级算法构造AST。我们这里也可以这样做，不过那样的话我们的parser就只是完成了词法分析的工作，仅仅获取到了表达式中的token，并且需要在中缀表达式语法对应的`map`里实现运算符优先级算法。有没有更优雅的方法呢？
+再用运算符优先级算法处理剩下的中缀表达式。我们这里也可以这样做，不过那样的话我们的parser就只是完成了词法分析的工作，仅仅获取到了表达式中的token，并且需要在中缀表达式语法对应的`map`里实现运算符优先级算法。有没有更优雅的方法呢？
 
 ### 运算符优先级
 
 确保运算符优先级的传统方法之一是修改语法[3]，比如要写出支持`+`和`*`的表达式，语法可以这样写：
 
 ```
-sum : product ('+' product)*
-product : primary ('*' primary)*
 primary : Num
+product : primary ('*' primary)*
+sum : product ('+' product)*
 ```
 
 对应的实现：
 
 ```typescript
-// sum : product ('+' product)*
-const sum = lazy(() =>
-  seqOf(product, zeroOrMore(seqOf(token('+'), product))))
-    .map(([lhs, rest]) =>
-      [lhs, ...rest].reduce((lhs, [op, rhs]) => [lhs, op, rhs]))
+// Num: '0' | [1-9] [0-9]* ;
+const Num =
+  oneOf(token('0'), regexToken(/^[1-9][0-9]*/))
+    .map(Number)
+
+// primary : Num
+const primary = lazy(() => Num)
 
 // product : primary ('*' primary)*
 const product = lazy(() =>
@@ -208,13 +215,11 @@ const product = lazy(() =>
     .map(([lhs, rest]) =>
       [lhs, ...rest].reduce((lhs, [op, rhs]) => [lhs, op, rhs]))
 
-// primary : Num
-const primary = lazy(() => Num)
-
-// Num: '0' | [1-9] [0-9]* ;
-const Num =
-  oneOf(token('0'), regexToken(/^[1-9][0-9]*/))
-    .map(Number)
+// sum : product ('+' product)*
+const sum = lazy(() =>
+  seqOf(product, zeroOrMore(seqOf(token('+'), product))))
+    .map(([lhs, rest]) =>
+      [lhs, ...rest].reduce((lhs, [op, rhs]) => [lhs, op, rhs]))
 ```
 
 注意到这里用了`reduce`来将匹配到的结果左结合。比如匹配到的结果是`[1, ['+', 2], ['+', 3]]`，`reduce`之后：
@@ -241,27 +246,33 @@ const Num =
 
 ### 右结合
 
-注意到上面例子里的运算符都是左结合的，如果是右结合的运算符要怎么写呢？比如求幂运算`**`。因为其优先级比`*`要高，所以要插在`*`下面：
+注意到上面例子里的运算符都是左结合的，如果是右结合的运算符要怎么写呢？比如求幂运算`**`。诀窍就在于右递归：
 
+```diff
+primary : Num
++ power : primary '**' power | primary
+- product : primary ('*' primary)*
++ product : power ('*' power)*
+sum : product ('+' product)*
 ```
-sum : ...
-product : power ('*' power)*
-power : primary '**' power | primary
-primary : ...
-```
 
-对应的实现：
+此外因为其优先级比`*`要高，所以要插在`*`的规则上面。对应的实现：
 
-```typescript
-// product : power ('*' power)*
-const product = lazy(() =>
-  seqOf(power, zeroOrMore(seqOf(token('*'), power))))
-    .map(...)
-
+```diff
 // power : primary '**' power | primary
 const power = lazy(() =>
   oneOf(seqOf(primary, token('**'), power), primary))
-    .map(...)
+    .map(([lhs, rest]) =>
+      [lhs, ...rest].reduce((lhs, [op, rhs]) => [lhs, op, rhs]))
+
+- // product : primary ('*' primary)*
++ // product : power ('*' power)*
+const product = lazy(() =>
+const product = lazy(() =>
+-   seqOf(primary, zeroOrMore(seqOf(token('*'), primary))))
++   seqOf(power, zeroOrMore(seqOf(token('*'), power))))
+    .map(([lhs, rest]) =>
+      [lhs, ...rest].reduce((lhs, [op, rhs]) => [lhs, op, rhs]))
 ```
 
 试一下：
@@ -285,10 +296,13 @@ binOp: '+' | '-' | '*' | '/' | '==' | '!=' | '<=' | '>=' | '<' | '>' | '&&' | '|
 
 首先可以简化的地方是，相同优先级的运算符可以放在一个规则里，比如：
 
-```typescript
-// product : power (('*' | '/' | '%') power)*
+```diff
+- // product : power ('*' power)*
++ // product : power (('*' | '/' | '%') power)*
 const product = lazy(() =>
-  seqOf(power, zeroOrMore(seqOf(oneOf(token('*'), token('/'), token('%')), power))))
+  seqOf(power, zeroOrMore(seqOf(
+-     token('*'), power))))
++     oneOf(token('*'), token('/'), token('%')), power))))
 ```
 
 但即便这样，有多少种不同的优先级就要写多少规则，而我已经想不出来更多语法规则的名字了 :-(
@@ -298,44 +312,44 @@ const product = lazy(() =>
 让我们再来看下最初的语法规则：
 
 ```
-sum : product ('+' product)*
-product : primary ('*' primary)*
 primary : Num
+product : primary ('*' primary)*
+sum : product ('+' product)*
 ```
 
 不知道你有没有看出其中蕴含的模式？没有的话也没关系，让我们来改写一下让其变得更明显：
 
 ```
-1. sum = f(product, '+')
-2. product = f(primary, '*')
-3. primary = Num
+1) primary = Num
+2) product = f('*', primary)
+3) sum = f('+', product)
 ```
 
-`3.`代入`2.`：
+`1)`代入`2)`：
 
 ```
-1. sum = f(product, '+')
-4. product = f(Num, '*')
+2) product = f('*', Num)
+3) sum = f('+', product)
 ```
 
-`4.`代入`1.`：
+`2)`代入`3)`：
 
 ```
-sum = f(f(Num, '*'), '+')
+3) sum = f('+', f('*', Num))
 ```
 
 这样是不是就看着有些眼熟？换种写法：
 
 ```
-sum = ['*', '+'].reduce((term, op) => f(term, op), Num)
+sum = ['*', '+'].reduce((term, op) => f(op, term), Num)
 ```
 
 也就是说我们只要把运算符按照优先级从高到低放在一个数组里，再`reduce`一下就好了。计算机科学中两大难题之一[4]的“起个好名字”，就这样被淹没在编译器为你准备好的临时变量里了！
 
-于是现在问题就变成上面的`f`函数要怎么写。其函数签名需要接受下一层的语法规则和一个运算符。我们来尝试下：
+于是现在问题就变成上面的`f`函数要怎么写。其函数签名需要接受一个运算符和下一层的语法规则。我们来尝试下：
 
 ```typescript
-const infix = (nextTerm: Parser, operator: Parser) =>
+const infix = (operator: Parser, nextTerm: Parser) =>
   seqOf(nextTerm, zeroOrMore(seqOf(operator, nextTerm)))
     .map(...)
 ```
@@ -345,27 +359,29 @@ const infix = (nextTerm: Parser, operator: Parser) =>
 ```typescript
 const sum = ...
   seqOf(product, zeroOrMore(seqOf(token('+'), product))))
+//      ^^^^^^^                   ^^^^^^^^^^  ^^^^^^^
     .map(...)
 
-const infix = (nextTerm: Parser, operator: Parser) =>
+const infix = (operator: Parser, nextTerm: Parser) =>
   seqOf(nextTerm, zeroOrMore(seqOf(operator, nextTerm)))
+//      ^^^^^^^^                   ^^^^^^^^  ^^^^^^^^
     .map(...)
 ```
 
-可以看到我们只是把下一层的规则和运算符作为函数的参数传入，替换掉具体的规则和运算符而已。让我们尝试把上面的`sum`/`product`等几个规则用这个函数改写下：
+可以看到我们只是把运算符和下一层的规则作为函数的参数传入，替换掉具体的运算符和规则而已。让我们尝试把上面的`sum`/`product`等规则用这个函数改写下：
 
 ```typescript
-const product = infix(primary, token('*'))
-const sum = infix(product, token('+'))
+const product = infix(token('*'), primary)
+const sum = infix(token('+'), product)
 ```
 
-你可以自行验证下这跟之前的实现是等价的。让我们接着试试`reduce`：
+你可以自行验证下这跟之前的实现是等价的。现在我们可以来尝试`reduce`了：
 
 ```typescript
-const expr = [infix(???, oneOf(token('*'), ...))].reduce(...)
+const expr = [infix(oneOf(token('*'), ...), ???)].reduce(...)
 ```
 
-这里我们就遇到了问题。函数的第一个参数需要接受下一层的规则，但下一层的规则是要`reduce`出来的。怎么办呢？了解一点函数式编程的话这都不是个事儿，curry化一下就好了：
+这里我们就遇到了问题。函数的第二个参数需要接受下一层的规则，但下一层的规则是要`reduce`出来的。怎么办呢？了解一点函数式编程的话这都不是个事儿，curry化一下就好了：
 
 ```typescript
 const infix = (operator: Parser) => (nextTerm: Parser) =>
@@ -432,7 +448,7 @@ const expr = exprOps.reduce((term, op) => op(term), primary)
 }
 ```
 
-这样，增加新的运算符和调整运算符优先级，都只要修改其中的`exprOps`数组就可以了。
+这样，增加新的运算符和调整运算符优先级，都只要修改上面的`exprOps`数组就可以了。
 
 ### 前缀和后缀表达式
 

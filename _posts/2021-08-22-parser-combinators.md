@@ -8,12 +8,13 @@ tags: [compiler, parser_combinators, functional_programming]
 ### 目录
 * 用TypeScript实现一门语言(1)——语法分析 <-- 你在这里
 * [用TypeScript实现一门语言(2)——表达式解析](/2021/08/27/parsing-expressions.html)
+* [用TypeScript实现一门语言(3)——语法分析拾遗](/2021/09/07/parsing-misc.html)
 
 ### 背景
 
 极客时间最近上了一门编译原理实战课《手把手带你写一门编程语言》[1]。课程目录让人看了相当兴奋，比Bob写了多年的新书[10]还多了很多高级主题。尤其是看到课程使用的语言是TypeScript时，我心想这次可能会有点不一样的东西。要知道Bob虽然把编译器相关的教程写得很浅显易懂，但总是喜欢用Java来实现，号称“如果都能用Java实现了，用其他任何语言也就都能实现了”[11]。但Java的语法并不是很简洁，平添了许多噪音，还缺少了很多语言特性。所以在看到前几课那些写得像Java一样的TS代码之后，我有些失望。
 
-此外，课程涉及到的编译原理知识还是我上大学时的那些东西，虽然经典，但着实枯燥。更有甚者，每次扩展一下语法都几乎要从零开始手写词法和语法分析器，连代码生成器都不用，工作量很大。
+此外，课程涉及到的语法分析知识还是我上大学时的那些东西，虽然经典，但着实枯燥。更有甚者，每次扩展一下语法都几乎要从零开始手写词法和语法分析器，连代码生成器都不用，工作量很大。
 
 在这几年的工作中，我逐渐了解到一种方法，在语言诞生初期不断迭代语法规则的时候，不用借助代码生成器就能快速手写语法分析器(`Parser`)，且基本不需要了解编译原理相关的知识。于是我准备来尝试下，用这种方法来实现一门编程语言。
 
@@ -33,13 +34,16 @@ type ParserFn = (state: ParserState) => Promise<ParserState>
 
 ```typescript
 type ParserState = {
+  // 原始的输入字符串
   target: string
+
+  // 当前处理的位置
   index: number
+
+  // 当前的处理结果
   result?: unknown
 }
 ```
-
-其中包含了原始的输入`target`，当前的处理位置`index`，以及当前的处理结果`result`。
 
 为了方便使用，我们再定义一个分析器类`Parser`：
 
@@ -92,7 +96,15 @@ function peek(state: ParserState) {
 }
 ```
 
-其接受一个待匹配的字符串，创建并返回一个`Parser`实例。parser的核心逻辑就是检查一下当前状态中，`target`中从`index`开始的字符串是否与传入的字符串匹配。如果匹配的话，就返回一个更新后的状态（设置了`result`和新的`index`）。剩下的都是对未匹配到的情况的处理，应该挺好理解的吧。
+其接受一个待匹配的字符串，创建并返回一个`Parser`实例。核心逻辑就这几行：
+
+```javascript
+if (slicedTarget.startsWith(s)) {
+  return { ...state, index: index + s.length, result: s }
+}
+```
+
+也就是检查一下当前状态中，`target`中从`index`开始的字符串是否与传入的字符串匹配。如果匹配的话，就返回一个更新后的状态（设置了`result`和新的`index`）。剩下的都是对未匹配到的情况的处理，应该挺好理解的吧。
 
 让我们来实际用一下：
 
@@ -126,13 +138,11 @@ const parser = str('hello')
 5. parameterList : StringLiteral (',' StringLiteral)* ;
 ```
 
-从上往下看，第一条规则讲了，一个`prog`由零到多个`functionDecl`或`functionCall`组成。这条规则需要两个parser，一个可以匹配`零到多个`的情况，另一个可以匹配`或`的情况。写成代码的话：
+从上往下看，第一条规则里，`|`表示“或”，`*`表示“零到多个”。这条规则就是说，一个`prog`由 “零到多个” `functionDecl` “或” `functionCall`组成。这条规则需要两个parser，一个可以匹配`零到多个`的情况，另一个可以匹配`或`的情况。我们将构造这两个parser的函数分别命名为`zeroOrMore`和`oneOf`。写成代码的话：
 
 ```typescript
 const prog = zeroOrMore(oneOf(functionDecl, functionCall))
 ```
-
-我们将构造这两个parser的函数分别命名为`zeroOrMore`和`oneOf`。
 
 ### 实现`zeroOrMore`
 
@@ -191,7 +201,7 @@ export const oneOf = (...parsers: Parser[]) =>
   })
 ```
 
-这里构造的parser会返回传入的一连串parser中第一个匹配成功的结果：
+这里构造的parser会返回传入的一连串parser中**_第一个_**匹配成功的结果：
 
 ```typescript
 const parser = oneOf(str('hello'), str('world'))
@@ -231,7 +241,7 @@ const parser = zeroOrMore(oneOf(str('hello'), str('world')))
 functionDecl: "function" Identifier "(" ")"  functionBody ;
 ```
 
-这条是说，一个`functionDecl`是由一个`"function"`关键字，一个标识符，一个左括号，一个右括号和一个`functionBody`组成的。这里我们需要构造能匹配一个`序列`的parser：
+这条是说，一个`functionDecl`是由一个`"function"`关键字，一个标识符，一个左括号，一个右括号和一个`functionBody`所构成的 “序列” 组成的。这里我们需要构造能匹配一个`序列`的parser。我们将这个构造函数命名为`seqOf`：
 
 ```typescript
 export const seqOf = (...parsers: Parser[]) =>
@@ -248,7 +258,7 @@ export const seqOf = (...parsers: Parser[]) =>
   })
 ```
 
-这个parser的实现跟上面的`zeroOrMore`有些类似，不同的地方在于传入的parser必须依次匹配成功，不然就会抛出错误：
+这个parser的实现跟上面的`zeroOrMore`类似，不同的地方在于传入的parser必须依次匹配成功，不然就会抛出错误：
 
 ```typescript
 const parser = seqOf(str('hello'), str('world'))
@@ -274,7 +284,7 @@ const functionDecl = seqOf(str('function'), Identifier, str('('), str(')'), func
 functionBody : '{' functionCall* '}' ;
 ```
 
-可以直接写出来了：
+用目前已有的构造函数就可以直接写出来了：
 
 ```typescript
 const functionBody = seqOf(str('{'), zeroOrMore(functionCall), str('}'))
@@ -288,7 +298,7 @@ const functionBody = seqOf(str('{'), zeroOrMore(functionCall), str('}'))
 functionCall : Identifier '(' parameterList? ')' ;
 ```
 
-这里需要能构建一个新的parser，来匹配`0到1个`的`parameterList`：
+这里的`?`表示“零到一个”。这里需要能构建一个新的parser，来匹配`零到一个`的`parameterList`。我们将这个构造函数命名为`zeroOrOne`：
 
 ```typescript
 export const zeroOrOne = (parser: Parser) =>
@@ -344,7 +354,7 @@ const functionDecl = seqOf(str('function'), Identifier, str('('), str(')'), func
 const prog = zeroOrMore(oneOf(functionDecl, functionCall))
 ```
 
-注意到代码的顺序与上面规则的顺序是相反的，是因为在`strict`模式下，`TypeScript`不允许使用未声明的变量，按照规则顺序写的话会编译错误。然而并不是所有的语法规则都只要倒过来实现就行的，后面我们会看到。
+注意到这里代码的顺序与上面规则的顺序是相反的。这是因为在`strict`模式下，`TypeScript`不允许使用未声明的变量，按照规则顺序写的话会编译错误。然而并不是所有的语法规则都只要倒过来实现就行的，后面我们会看到。
 
 ### 实现`regExp`
 
@@ -354,7 +364,7 @@ const prog = zeroOrMore(oneOf(functionDecl, functionCall))
 Identifier: [a-zA-Z_][a-zA-Z0-9_]* ;
 ```
 
-虽然这里也可以用上面定义的那些parser构造函数写出来，但因为本身借用了正则表达式的语法，用正则表达式来实现会更方便。于是我们定义一个支持正则匹配的parser：
+虽然这里也可以用上面定义的那些parser构造函数写出来，但因为本身借用了正则表达式的语法，用正则表达式来实现会更方便。于是我们定义一个支持正则匹配的parser构造函数`regExp`：
 
 ```typescript
 export const regExp = (pattern: RegExp) =>
@@ -378,7 +388,7 @@ export const regExp = (pattern: RegExp) =>
   })
 ```
 
-这里的实现跟`str`差不多。需要注意的是如果正则表达式不是以`^`开头的话，则可能在某个中间位置匹配到结果，那样就相当于跳过了某些字符做了匹配。这在大部分情况下都是错误的。开头的断言就是用来检查这个情况的：
+这里的实现跟最上面的`str`差不多。需要注意的是如果正则表达式不是以`^`开头的话，则可能在某个中间位置匹配到结果，那样就相当于跳过了某些字符做了匹配。这在大部分情况下都是错误的。开头的断言就是用来检查这个情况的：
 
 ```typescript
 console.assert(pattern.source.startsWith('^'), 'regExp should start with "^"')
@@ -406,11 +416,12 @@ const StringLiteral = regExp(/^"[^"]*"/)
 
 当然这样就只支持双引号(")，单引号(')和反引号(`)就不支持了。你也可以尝试自己加一下。
 
-### `Parser Combinators`
+### Parser Combinators
 
 这样我们就把语法规则和词法规则翻译成了一系列parser的 **“组合”**。这种实现模式有个名字，叫`combinator`模式[5]。而parser的组合就称为`parser combinators`（有译作分析器组合子）。这样实现的话，规则和代码有着一目了然的对应关系：
 
 ```typescript
+// StringLiteral: "[^"]*"
 const StringLiteral = regExp(/^"[^"]*"/)
 
 // Identifier: [a-zA-Z_][a-zA-Z0-9_]* ;
@@ -432,9 +443,9 @@ const functionDecl = seqOf(str('function'), Identifier, str('('), str(')'), func
 const prog = zeroOrMore(oneOf(functionDecl, functionCall))
 ```
 
-而且我们好像连词法分析器都没写。如果把上面那些parser构造函数放到一个库文件里，那么每次要实现一个新语言的词法规则和语法规则时，只需要写跟这些规则的数量相当的代码就可以完成语法分析了。要知道代码越少越简单意味着维护成本越低，这些每一个都看上去平平无奇的代码真有那么大的威力吗？让我们立马测试下。
+而且我们好像连词法分析器都没写。如果把上面那些parser构造函数放到一个库文件里，那么每次要实现一个新语言的词法规则和语法规则时，只需要写跟这些规则的数量相当的代码就可以完成语法分析了。要知道代码越少越简单意味着维护成本越低，这些每一个都看上去平平无奇的函数真有那么大的威力吗？让我们立马测试下。
 
-先试试一个最简单的函数调用：
+先试一个最简单的函数调用：
 
 ```typescript
 const res = await prog.parse('foo()')
@@ -476,7 +487,8 @@ class Parser {
 // functionCall : Identifier '(' parameterList? ')' ;
 const functionCall =
   seqOf(Identifier, str('('), zeroOrOne(parameterList), str(')'))
-    .map(([name, _lparen, params, _rparen]) => ({ type: 'functionCall', name, params }))
+    .map(([name, _lparen, params, _rparen]) =>
+      ({ type: 'functionCall', name, params }))
 
 // ...
 
@@ -523,7 +535,7 @@ const res = await prog.parse('println("hello", "world")')
 */
 ```
 
-Emmm...虽然没有抛出错误，但我们并没有得到想要的结果。注意到解析状态中`index`为0，说明解析器没有匹配到任何结果。我们把在解析过程结束后仍有未匹配到输入的情况定义为出错的情况。为了处理这种情况，在`Parser`类中添加如下方法：
+Emmm...虽然没有抛出错误，但我们并没有得到想要的结果。注意到解析状态中`index`为0，说明解析器没有匹配到任何结果。如果我们要把在解析过程结束后仍有未匹配到输入的情况定义为出错的情况的话，就需要特别处理下。在`Parser`类中添加如下方法：
 
 ```typescript
 class Parser {
@@ -548,7 +560,7 @@ const res = await prog.parseToEnd('println("hello", "world")')
 
 ### 错误调试
 
-好了，接下来我们就要分析为什么会出错了。`prog` parser是指望不上了。按照规则，前一个匹配上的应该是`functionCall`，让我们来试一下：
+好了，接下来我们就要分析为什么会出错了。`prog`构造的parser是指望不上了。按照规则，前一个匹配上的应该是`functionCall`，让我们来试一下：
 
 ```typescript
 const res = await functionCall.parseToEnd('println("hello", "world")')
@@ -570,7 +582,7 @@ const res = await parser.parseToEnd(', "world"')
 // Parsing end at 0: ", "world""
 ```
 
-还是不行。再剥一层：
+还是不行。再把外面的`zeroOrMore`剥掉：
 
 ```typescript
 const parser = seqOf(str(','), StringLiteral) 
@@ -578,7 +590,7 @@ const res = await parser.parseToEnd(', "world"')
 // regExp: Tried to match "/^"[^"]*"/", but got " "world"" at index 1
 ```
 
-这下明白了，“`,`”和字符串之间有个空格没办法匹配。因为通常编程语言会允许在代码中加入任意的空白符来增加（或是破坏[6]）可读性，所以这些空白符也是要能被匹配出来的。先定义一个能匹配空白符的parser构造函数：
+这下明白了。parser想要匹配字符串开头的`"`，但遇到了空格。看来是`,`和字符串之间有个空格没办法被匹配。因为通常编程语言会允许在代码中加入任意的空白符来增加（或是破坏[6]）可读性，所以这些空白符也是要能被匹配出来的。先定义一个能匹配空白符的parser构造函数：
 
 ```typescript
 const whitespace = regExp(/^\s*/)
@@ -617,7 +629,7 @@ const { result } = await prog.parseToEnd('println("hello", "world")')
 */
 ```
 
-终于成功了。源代码中还需要被忽略的是各种注释，你可以试着实现下。
+终于成功了。通常源代码中还需要被忽略的是各种注释，你可以试着实现下。
 
 ### 更复杂的例子
 
@@ -683,7 +695,7 @@ const { result } = await prog.parseToEnd(source)
 
 ### 实现`lazy`
 
-让我们来试试更复杂的语法[7]，注意到其中包含了递归的规则：
+最后让我们来试试更复杂的语法[7]，注意到其中包含了递归的规则：
 
 ```
 ...
