@@ -28,7 +28,7 @@ tags: [parsing, leetcode]
 
 让我们一题一题来看。
 
-(顺带一提，我是用我之前写的[LeetCode解题工具](/2020/08/17/leetcode-with-typescript.html)来提交TypeScript的代码，这样就可以把parser combinators作为一个库文件import进来)
+(顺带一提，我是用我之前写的[LeetCode解题工具](/2020/08/16/leetcode-with-typescript.html)来提交TypeScript的代码，这样就可以把parser combinators作为一个库文件import进来)
 
 ### [[中等] 394. 字符串解码](https://leetcode-cn.com/problems/decode-string/)
 
@@ -471,3 +471,16 @@ opExpr -> "(" Op expr expr ")"
 ```
 
 不过要完成这题还得实现变量的作用域，这已经开始步入实现一门语言的领域了。
+
+### 小结
+
+这波题目刷下来让我们对parser combinators的能力又有了进一步的认识。我们熟悉了`.map()`要怎么写，如何把现有的parser构造函数组合成更复杂的函数，了解了为什么有时候需要调整语法规则中各部分的顺序，以及左递归的语法虽然写起来很自然但无法被parser combinators所用。关于处理左递归语法有一套规范的完整理论，不过处理完的结果不一定容易理解。要想把左递归语法改写成清晰的消除了左递归的语法，需要一定的练习和经验。
+
+此外我们可以看到，语法分析的问题只要能写出语法，剩下的工作就是机械地把语法翻译成代码而已。听到“机械”一词有没有觉得DNA动了？没错，我们可以从语法规则中自动生成解析代码。可以参考我写的一个parser生成器[1]，其甚至可以从描述语法规则的语法规则中生成自身，在编译器的各个组件中率先完成了自举。
+
+### 参考资料
+
+文中的`between`和`sepBy`参考了`arcsecond`[2]的API。
+
+* [1] [A Bootstrapping Parser Generator](https://github.com/qszhu/parserGen)
+* [2] [GitHub - francisrstokes/arcsecond: ✨Zero Dependency Parser Combinator Library for JS Based on Haskell’s Parsec](https://github.com/francisrstokes/arcsecond)
