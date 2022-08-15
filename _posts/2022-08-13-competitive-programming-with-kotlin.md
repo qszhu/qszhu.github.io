@@ -38,7 +38,7 @@ tags: [kotlin, competitive_programming]
 
 ## 1. 背景
 
-[之前](/2020/08/17/leetcode-with-typescript.html)提到，由于机缘巧合开始刷LeetCode[1]。后来逐渐不满足于只刷LeetCode，还开始刷CodeForces[2]和AtCoder[3]等。不过这时JavaScript/TypeScript作为脚本语言在编程竞赛中的劣势逐渐体现，主要表现在数据规模大时容易被卡常（指实现相同复杂度的算法，由于运行时的额外开销导致运行超时），让我把目光转向其他替代语言。
+[之前](/2020/08/17/leetcode-with-typescript.html)提到，由于机缘巧合开始刷LeetCode[1]。后来逐渐不满足于只刷LeetCode，还开始刷CodeForces[2]和AtCoder[3]等。不过这时JavaScript/TypeScript作为脚本语言在编程竞赛中的劣势逐渐体现，主要表现在数据规模大时容易被卡常（指实现相同复杂度的算法，由于运行时的额外开销导致运行超时），让我开始把目光转向其他替代语言。
 
 ## 2. 理想的语言
 
@@ -62,11 +62,11 @@ tags: [kotlin, competitive_programming]
 
 ## 3. Kotlin
 
-由于退役太久，我之前并知道ACM总决赛都用上Kotlin了[4]。而在我不做Android开发好多年后，才听说似乎有用Kotlin开发的Android应用。大致了解了一下之后，发现Kotlin基本能满足上面提到的条件：
+由于退役太久，我之前并不知道ACM总决赛都用上Kotlin了[4]。而在我不做Android开发好多年后，才听说似乎有用Kotlin开发的Android应用。大致了解了一下之后，发现Kotlin基本能满足上面提到的条件：
 
 * 开发速度快：Kotlin相比Java有更精简的语法，并且能够以脚本的方式运行；
 * 表达能力强：Kotlin支持多种编程范式，过程式、函数式、面向对象和泛型等；
-* 运行效率高：由于运行在JVM上，Java能过的题Kotlin应该也都能过；
+* 运行效率高：由于运行在JVM上，只要Kotlin没有在运行时增加额外的开销，那么Java能过的题Kotlin应该也都能过；
 * 官方支持：这点上面已经提到过了。在Kotlin的文档中，甚至专门有一篇讲如何在编程竞赛中使用Kotlin的简要文章[5]。
 
 于是我决定通过实战再深入了解一下。
@@ -101,7 +101,7 @@ fun solution(s: String): Int {
 }
 ```
 
-从上面这段代码可以看到，Kotlin可以无缝使用Java的API，比如`HashSet`，`.toCharArray()`等。除了声明函数和变量等的语法略有不同以外，跟普通的Java程序差别不大。熟悉其他语言的用户也很容易理解。
+从上面这段代码可以看到，Kotlin可以无缝使用Java的API，比如`HashSet`，`.toCharArray()`等。除了声明函数和变量等的语法略有不同以外，跟普通的Java程序差别不大。熟悉其他语言的用户应该也很容易就能理解。
 
 不过使用Kotlin能把代码写得更简洁：
 
