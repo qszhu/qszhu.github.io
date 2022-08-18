@@ -38,7 +38,7 @@ tags: [kotlin, competitive_programming]
 
 ## 1. 背景
 
-[之前](/2020/08/17/leetcode-with-typescript.html)提到，由于机缘巧合开始刷LeetCode[1]。后来逐渐不满足于只刷LeetCode，还开始刷CodeForces[2]和AtCoder[3]等。不过这时JavaScript/TypeScript作为脚本语言在编程竞赛中的劣势逐渐体现，主要表现在数据规模大时容易被卡常（指实现相同复杂度的算法，由于运行时的额外开销导致运行超时），让我开始把目光转向其他替代语言。
+[之前](/2020/08/16/leetcode-with-typescript.html)提到，由于机缘巧合开始刷LeetCode[1]。后来逐渐不满足于只刷LeetCode，还开始刷CodeForces[2]和AtCoder[3]等。不过这时JavaScript/TypeScript作为脚本语言在编程竞赛中的劣势逐渐体现，主要表现在数据规模大时容易被卡常（指实现相同复杂度的算法，由于运行时的额外开销导致运行超时），让我开始把目光转向其他替代语言。
 
 ## 2. 理想的语言
 
@@ -66,7 +66,7 @@ tags: [kotlin, competitive_programming]
 
 * 开发速度快：Kotlin相比Java有更精简的语法，并且能够以脚本的方式运行；
 * 表达能力强：Kotlin支持多种编程范式，过程式、函数式、面向对象和泛型等；
-* 运行效率高：由于运行在JVM上，只要Kotlin没有在运行时增加额外的开销，那么Java能过的题Kotlin应该也都能过；
+* 运行效率高：由于可以运行在JVM上，只要Kotlin没有在运行时增加额外的开销，那么Java能过的题Kotlin应该也都能过；
 * 官方支持：这点上面已经提到过了。在Kotlin的文档中，甚至专门有一篇讲如何在编程竞赛中使用Kotlin的简要文章[5]。
 
 于是我决定通过实战再深入了解一下。
@@ -169,7 +169,7 @@ fun solution(inputString: String): Boolean {
 
 * 因为每一部分的字符串可能不是合法的整数，所以转换时用了`.toIntOrNull()`而不是`.toInt()`，这样在转换失败时会返回`null`而不是抛出异常。Kotlin的API中以`OrNull`结尾的方法都是这样的逻辑；
 * 在判断整数是否在范围内时用了`in Range`的形式，比写`if`更简洁，并且不需要额外再判断`null`；
-* 这里用到了lambda，熟悉函数式编程的同学理解起来应该没啥困难。留到下一题再详细说说。
+* 这里用到了lambda，熟悉函数式编程的同学理解起来应该没啥困难，唯一有些特别的地方在于lambda的参数可以用隐式声明的`it`而不用显式地写出来。留到后面再详细说说。
 
 此外，因为函数体有多条语句，所以没有用`=`的形式。那么能否用`=`呢？也是可以的：
 
@@ -184,6 +184,8 @@ fun solution(inputString: String): Boolean =
 ```
 
 这里的`let`创建了一个新的作用域，而本身可以作为一个表达式返回，所以可以用`=`。在这里使用的话，除了形式上的区别，并没有带来什么实质上的好处（可能只是让熟悉ML系语言的同学觉得眼熟，包括像前面的`when`语句）。不过Kotlin中的`let`是所谓的**作用域函数**中的一个，后面我们还会看到其他的作用域函数。
+
+另外由于这里的lambda发生了嵌套，所以如果在内部的lambda中还是使用隐式声明的`it`的话可能会在理解上发生混淆，IDEA中也会有提示。所以这里在内部的lambda中显式声明了参数。
 
 这题还可以用正则表达式做：
 
@@ -366,6 +368,13 @@ fun solution(inputArray: MutableList<Int>, elemToReplace: Int, substitutionElem:
 
 对于这种没有返回值的方法，`.apply()`就可以在调用完方法后返回被调用者。
 
+因为`.apply()`隐式声明的参数是`this`而不是`it`，而在调用方法时`this`是可以被省略的，所以也可以写成这样：
+
+```kotlin
+fun solution(inputArray: MutableList<Int>, elemToReplace: Int, substitutionElem: Int): List<Int> =
+    inputArray.apply { replaceAll { if (it == elemToReplace) substitutionElem else it } }
+```
+
 #### 5.4.2 [Add Border](https://app.codesignal.com/arcade/intro/level-4/ZCD7NQnED724bJtjN)
 
 ##### 题目描述
@@ -423,7 +432,7 @@ fun solution(inputString: String): Boolean =
     inputString.groupBy { it }.values.count { !it.size.divides(2) } <= 1
 ```
 
-不过由于我们只关心字符出现的频次而不关心具体的字符，这里可以用`.groupingBy()`和`.eachCount()`，性能会更好：
+不过由于我们只关心字符出现的频次而不关心具体的字符，这里可以用`.groupingBy()`和`.eachCount()`，性能通常会更好：
 
 ```kotlin
 fun solution(inputString: String): Boolean =
@@ -529,7 +538,7 @@ fun solution(inputArray: MutableList<Int>, k: Int): Int =
     inputArray.windowed(k).maxOf { it.sum() }
 ```
 
-不过这个窗口并没有真正“滑动”起来，会导致很多重复计算（时间复杂度`O(nk)`），数据规模大的时候就可能会超时。
+不过这个窗口并没有真正“滑动”起来，每次对窗口中的数字求和时做了很多重复计算（时间复杂度`O(nk)`），数据规模大的时候就可能就会超时。
 
 Kotlin并没有强制要求用某种风格写代码，所以可以用传统的过程式风格写（时间复杂度`O(n)`）：
 
@@ -562,7 +571,7 @@ fun solution(inputArray: MutableList<Int>, k: Int): Int =
 
 不过个人感觉这样的代码可读性反而变差了。
 
-于是我们换种思路。因为需要求和，所以可以用前缀和来做。一样是fold，不过需要把每次fold的结果都保留下来，Kotlin中可以用`.runningFold()`来实现：
+于是我们换种思路。因为需要求和，（视数据取值范围）可以用前缀和来做。一样是fold，不过需要把每次fold的结果都保留下来，Kotlin中可以用`.runningFold()`来实现：
 
 ```kotlin
 fun solution(inputArray: MutableList<Int>, k: Int): Int =
