@@ -581,12 +581,12 @@ fun solution(inputArray: MutableList<Int>, k: Int): Int =
     }
 ```
 
-而`.runningFold()`还有另一个名字叫`.scan()`，可以少打很多字母：
+而`.runningFold()`还有另一个名字叫`.scan()`，用来相加的lambda也可以用函数引用替代，可以少打很多字母：
 
 ```kotlin
 fun solution(inputArray: MutableList<Int>, k: Int): Int =
     inputArray.let { a ->
-        val preSum = a.scan(0) { acc, i -> acc + i }
+        val preSum = a.scan(0, Int::plus)
         (k..a.size).maxOf { i -> preSum[i] - preSum[i - k] }
     }
 ```
