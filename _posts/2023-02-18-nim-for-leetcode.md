@@ -57,6 +57,8 @@ Nim中用`nil`接收。
 
 Nim中没有对应的类型，无法对其进行操作，但可以传递。
 
+此外，在用于判断真值的时候可以用`nil`代替，因为Nim生成的JavaScript代码会用`==`进行比较，而在JavaScript中`undefined == null`。不清楚其中微妙后果的读者可以参考[这篇](/2021/04/24/jvm-ts.html)。
+
 ### 3.4 `Array`
 
 Nim中可用`seq`接收。
