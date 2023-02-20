@@ -25,7 +25,7 @@ $ nim js -d:danger solution.nim
 
 ## 2. 导出函数
 
-LeetCode上的题目通常是要你实现一个函数，提交后会有一些驱动代码来调用这个函数，所以需要让Nim输出一个具有相同函数签名的JavaScript函数：
+LeetCode上的题目通常是要你实现一个函数，提交后会有一些驱动代码来调用这个函数，所以需要让Nim输出一个具有相同签名的JavaScript函数：
 
 ```nim
 # 2235. Add Two Integers
@@ -43,7 +43,7 @@ proc sum(num1, num2: int): int {.exportc.} =
 
 ## 3. 原生数据类型
 
-导出的函数需接收JavaScript中不同数据类型的参数。Nim中预定义了与C类型对应的兼容类型如`cint`、`cdouble`等，但在JavaScript中只会用到其中有限的几种。
+导出的函数需接收JavaScript中不同类型的参数。Nim中预定义了与C类型对应的兼容类型如`cint`、`cdouble`等，但在JavaScript中只会用到其中有限的几种。
 
 ### 3.1 `Boolean`
 
@@ -55,7 +55,7 @@ Nim中用`nil`接收。
 
 ### 3.3 `Undefined`
 
-Nim中没有对应的类型，无法使用，但可以传递。
+Nim中没有对应的类型，无法对其进行操作，但可以传递。
 
 ### 3.4 `Array`
 
@@ -63,11 +63,9 @@ Nim中可用`seq`接收。
 
 ### 3.5 `Number`
 
-从`int`，`clonglong`到`cdouble`等都可以。由于JavaScript中的`Number`是64位浮点数，所以最准确的对应类型应该是`cdouble`/`float64`。但考虑到类型转换的开销以及LeetCode上题目的数据范围，大部分情况下用`int`就可以，对应32位整数。
+从`int`，`clonglong`到`cdouble`等都可以用来接收。由于JavaScript中的`Number`是64位浮点数，所以最准确的对应类型应该是`cdouble`/`float64`。但考虑到类型转换的开销以及LeetCode上题目的数据范围，大部分情况下用`int`就可以，对应32位整数。
 
-显然，如果在Nim中使用了`int64`，则在JavaScript中可能会损失精度。
-
-JavaScript中，需要用到64位整数的地方就只能用`BigInt`，并会带来一定的性能开销。
+显然，如果在Nim中使用了`int64`，则在JavaScript中可能会损失精度。在JavaScript中，需要用到64位整数的地方就只能用`BigInt`，并会带来一定的性能开销。
 
 ### 3.6 `BigInt`
 
@@ -78,15 +76,18 @@ import std/jsbigints
 
 const MOD = 1e9.int + 7
 
-type mint = distinct int
+type modInt = distinct int
 
-proc `*`(x, y: mint): mint =
-  (x.int.big * y.int.big mod MOD.big).toNumber.mint
+proc `*`(x, y: modInt): modInt =
+  (x.int.big * y.int.big mod MOD.big).toNumber.modInt
 ```
 
 ### 3.7 `String`
 
 Nim中只能用`cstring`来接收，存在一定的类型转换开销。所以原则上是能不转就不转，通过`std/cstrutils`[5]来直接处理`cstring`。然而从经验上来看大部分情况下是不够用的，还是需要转换。
+
+* `cstring`到`string`：`$str`
+* `string`到`cstring`：`str.cstring`
 
 ## 4. 自定义类型
 
@@ -146,9 +147,9 @@ proc guessNumber(n: int): int {.exportc.} =
   lo
 ```
 
-JavaScript中的函数通过`{.importc.}`[7]就能在Nim中调用，Nim中的函数通过`{.exportc.}`就能在JavaScript中调用，相当方便。
+JavaScript中的函数通过`{.importc.}`[7]声明就能在Nim中调用，Nim中的函数通过`{.exportc.}`声明就能在JavaScript中调用，相当方便。
 
-Nim中的FFI还有更精细的控制，同样的功能还可以用其他的pragma实现[8]，比如：
+Nim中的FFI还有更精细的控制，同样的功能也可以用其他的pragma实现[8]，比如：
 
 ```nim
 proc guess(num: int): int {.importjs: "guess(#)".}
@@ -216,7 +217,7 @@ ParkingSystem.prototype.addCar = function(carType) {
 
 ### 8.1 导出构造函数
 
-这一步的关键是，JavaScript中的函数在被当作类的构造函数时，`this`对象会指向类的新实例，并会在函数返回时被隐式返回[10]。在Nim中需要重现这个逻辑：
+这一步的关键是，JavaScript中的函数在被当作类的构造函数（通过`new`调用）时，`this`对象会指向类的新实例，并会在函数返回时被隐式返回[10]。由于Nim中只有普通的函数，就需要重现这个逻辑：
 
 ```nim
 type ParkingSystem = ref object
@@ -225,7 +226,6 @@ type ParkingSystem = ref object
 proc newParkingSystem(big: int, medium: int, small: int): ParkingSystem {.exportc: "ParkingSystem".} =
   var this {.importc, nodecl.}: ParkingSystem
 
-  # init fields
   this.slots = @[0, big, medium, small]
 
   this
@@ -248,15 +248,15 @@ proc addCarJs(carType: int): bool {.exportc: "addCar".} =
   this.addCar(carType)
 ```
 
-`{.emit.}`可以直接输出目标代码，非常强大也非常容易被滥用，因为如果全部代码都用其来生成的话还不如直接用目标语言来写呢。
+`{.emit.}`可以直接输出目标代码，非常强大也非常容易被滥用，因为如果全部代码都用其来生成的话，还不如直接用目标语言来写呢。
 
-此外这里多声明了一个wrapper函数，是为了让Nim对象方法之间能够相互调用。这同时也让语言之间的分界线变得更明显。
+此外这里多声明了一个wrapper函数，在其中导入了隐式的`this`对象，作为对应的Nim函数的第一个参数传递。这样Nim对象的方法之间也能够相互调用；去掉wrapper函数就是纯粹的Nim代码，语言之间的分界线也变得更加明显。
 
 由于声明wrapper需要写很多脚手架代码，我已在之前的LeetCode解题工具中[13]加入了自动生成脚手架的模版。
 
 ## 9. 小结
 
-至此，在LeetCode出现的绝大部分题目都可以用Nim来解决了。下一篇我们会讲讲Nim标准库在JavaScript target中的一些问题。
+至此，在LeetCode出现的绝大部分题目都可以用Nim来解决了。下一回我们会讲讲Nim标准库和JavaScript标准库在互操作中的问题。
 
 ## 参考资料
 
