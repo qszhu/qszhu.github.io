@@ -15,9 +15,7 @@ tags: [steamdeck, remote_desktop]
 
 Steam Deck的游戏模式类似于PC端的大屏幕模式.因为是Linux系统,需要通过WINE来运行Windows游戏.实测能够流畅运行部分3A游戏.
 
-此外得益于Steam Deck的性能,也能够流畅运行不少模拟器.如RetroArch,Cemu,RPCS3,yuzu等.贴张图,就不展开了.
-
-![Steam Deck](/assets/images/2023-12-03/sd.jpg)
+此外得益于Steam Deck的性能,也能够流畅运行不少模拟器.如RetroArch,Cemu,RPCS3,yuzu等,就不展开了.
 
 对于小朋友爱玩的MC,不管是启动器还是服务端,流畅运行更是不在话下.
 
