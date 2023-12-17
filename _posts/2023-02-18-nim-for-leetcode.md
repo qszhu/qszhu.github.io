@@ -5,6 +5,9 @@ date: 2023-02-18 21:30:00 +0800
 tags: [nim, leetcode, competitive_programming]
 ---
 
+* **谈谈Nim与JavaScript的互操作——以LeetCode为例（FFI篇）** <-- 你在这里
+* [谈谈Nim与C/C++的互操作——以OpenGL为例](/2023/12/17/nim-for-opengl.html)
+
 Nim作为一门胶水语言，像极了当年作为一种全栈语言大杀四方的Python。然而对其特色的跨语言调用功能的描述却散落在不同的文档中，缺乏有效的整理。本文尝试整理一下Nim与JavaScript互操作的用法。
 
 LeetCode作为一个编程竞赛网站，本身并不支持Nim，但其对JavaScript的支持比较友好（如更宽松的执行时间，以及调整到2^53之内的数据范围）。其上的题型恰好能覆盖大部分与JavaScript进行互操作的情况。所以本文就以LeetCode为例进行整理。
