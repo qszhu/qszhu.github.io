@@ -80,13 +80,13 @@ switch "passL", "-sEXPORTED_RUNTIME_METHODS=ccall,UTF8ToString"
 switch "passL", "-sSINGLE_FILE"
 ```
 
-JavaScript文件(假设命名为`post.js`)需要被拼接到生成的文件最后[8]:
+JavaScript胶水文件(假设命名为`post.js`)需要被拼接到生成的文件最后[8]:
 
 ```nim
 switch "passL", "--extern-post-js post.js"
 ```
 
-为了能像在上述`post.js`中同步初始化WASM模块, 需要加入如下参数[9][10]:
+为了能像在上述胶水文件中同步初始化WASM模块, 需要加入如下参数[9][10]:
 
 ```nim
 switch "passL", "-sWASM_ASYNC_COMPILATION=0"
@@ -115,13 +115,13 @@ switch "noMain", "on"
 switch "passL", "-Os"
 ```
 
-这额外的一顿操作能把目标文件缩减到几十KB. 然而运行时会抛出异常, 类似:
+这些额外的操作能把目标文件缩减到几十KB. 然而运行时会抛出异常, 类似:
 
 ```
 CompileError: WebAssembly.Module(): Compiling function #7 failed: Invalid opcode (enable with --experimental-wasm-threads) @+547
 ```
 
-看上去是WASM尚不支持线程导致, 于是告诉Nim不要使用多线程[5]:
+看上去是由于WASM尚不支持线程导致, 于是告诉Nim不要使用多线程[5]:
 
 ```nim
 --threads:off
@@ -167,7 +167,7 @@ CodeForces对于内存卡得比较严格, 所以上述方法在遇到大规模�
 
 ### LeetCode
 
-LeetCode上无论如何调整参数, 运行WASM都会报内存不足, 一度把我整不会了. 好在LeetCode上可以自由运行一些系统命令, 让我们可以看到运行环境的配置:
+无论如何调整编译器参数, 在LeetCode上运行WASM都会报内存不足, 一度把我给整不会了. 好在LeetCode上可以自由运行一些系统命令, 让我们可以看到运行环境的配置:
 
 ```javascript
 const cp = require('child_process')
@@ -180,7 +180,7 @@ console.log(String(cp.execSync("ulimit -v")))
 
 在编程竞赛平台上提交程序并运行的行为, 从广义上看其实也是一种部署行为. 需要在受限的环境中进行部署的情况, 在日常工作中也并不少见. 从这个角度看的话, 编程竞赛也不仅仅是考验算法了.
 
-把WASM看作一个新的部署对象的话, 经由LLVM-Emscripten就能够让一众语言都能通过这种方式运行在允许WASM运行的地方. 按照维基[18]上的记述, 这样的语言包括且不限于Ada, C, C++, D, Delphi, Fortran, Haskell, Julia, Objective-C, Rust和Swift等.
+把WASM看作一个新的部署对象的话, 经由LLVM-Emscripten就能够让一众语言都能通过这种方式运行在允许WASM运行的地方. 按照维基[18]上的记述, 这样的语言包括且不限于Ada, C, C++, D, Delphi, Fortran, Haskell, Julia, Objective-C, Rust和Swift等. 感兴趣的同学可以试试通过这种方式在不提供官方支持的编程平台上提交自己喜欢的语言.
 
 ## 参考
 
