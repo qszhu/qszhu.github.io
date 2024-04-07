@@ -53,7 +53,7 @@ tags: [chatgpt, visionos]
 
 ![5](/assets/images/2024-04-06/5.png)
 
-于是只能人肉去搜索, 发现VisionOS中非沉浸模式下的App是不能用MetalKit的. 可能see through的画面本身都是通过Metal渲染的, 要跟摄像头的画面做blending啥的, 整个OS界面就是一个Metal应用吧. 解决的办法可以是拿CAMetalLayer去给Metal渲染[5].
+于是只能人肉去搜索, 发现VisionOS的App是不能用MetalKit的. 可能see through的画面本身都是通过Metal渲染的, 要跟摄像头的画面做blending啥的, 整个OS界面就是一个Metal应用吧. 解决的办法可以是拿CAMetalLayer去给Metal渲染[5].
 
 ## 第四次尝试
 
@@ -124,7 +124,7 @@ func render() {
 
 整个过程其实是个根据已有信息进行推理的过程. 比如这次的目标是通过C++调用Metal接口在VisionOS的App窗口中渲染. 直接跑是跑不起来的, 那么中间还需要哪些步骤呢?
 
-* VisionOS的SwiftUI中用不了MetalKit
+* VisionOS中用不了MetalKit
   * -> 渲染到CAMetalLayer提供的Drawable上
     * -> 自定义符合UIViewRepresentable的UIView来绑定CAMetalLayer
 * Swift无法直接调用C++
